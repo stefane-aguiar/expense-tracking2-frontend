@@ -93,16 +93,7 @@ async function getAllUsers() {
     const res = await fetch(`${baseUrl}/users`);
     const handled = await handleResponse(res);
 
-    if (handled.ok) {
-      const users = handled.data;
-      if (users.length === 0) {
-        showResult({ message: "No users found", users: [] });
-      } else {
-        showResult({ count: users.length, users: users });
-      }
-    } else {
-      showResult(handled.data);
-    }
+    showResult(handled.data);
   } catch (err) {
     showError(err.message);
   }
@@ -234,16 +225,7 @@ async function getAllExpenses() {
     const res = await fetch(`${baseUrl}/expenses`);
     const handled = await handleResponse(res);
 
-    if (handled.ok) {
-      const expenses = handled.data;
-      if (expenses.length === 0) {
-        showResult({ message: "No expenses found", expenses: [] });
-      } else {
-        showResult({ count: expenses.length, expenses: expenses });
-      }
-    } else {
-      showResult(handled.data);
-    }
+    showResult(handled.data);
   } catch (err) {
     showError(err.message);
   }
@@ -274,16 +256,7 @@ async function getExpensesByUser() {
     const res = await fetch(`${baseUrl}/expenses/user/${encodeURIComponent(userId)}`);
     const handled = await handleResponse(res);
 
-    if (handled.ok) {
-      const expenses = handled.data;
-      if (expenses.length === 0) {
-        showResult({ message: `No expenses found for user ${userId}`, expenses: [] });
-      } else {
-        showResult({ userId: parseInt(userId), count: expenses.length, expenses: expenses });
-      }
-    } else {
-      showResult(handled.data);
-    }
+    showResult(handled.data);
   } catch (err) {
     showError(err.message);
   }
@@ -422,3 +395,4 @@ async function deleteExpense() {
     showError(err.message);
   }
 }
+
