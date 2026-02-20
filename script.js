@@ -202,7 +202,7 @@ async function login() {
       // Decode token to get user info (JWT payload is base64)
       const payload = JSON.parse(atob(authToken.split('.')[1]));
       currentUser = {
-        id: payload.sub,
+        id: parseInt(payload.sub),  // Convert to number
         name: payload.name,
         email: payload.email
       };
@@ -229,7 +229,9 @@ function logout() {
   localStorage.removeItem("authToken");
   localStorage.removeItem("currentUser");
   showAuth();
-  authOutput.innerHTML = '<span class="placeholder">Status will appear here...</span>';
+  if (authOutput) {
+    authOutput.innerHTML = '<span class="placeholder">Status will appear here...</span>';
+  }
 }
 
 // ==================== USER OPERATIONS ====================
@@ -242,7 +244,12 @@ async function getMyAccount() {
       headers: getAuthHeaders()
     });
     const handled = await handleResponse(res);
-    showResult(handled.data);
+
+    if (handled.ok) {
+      showResult(handled.data);
+    } else {
+      showError(handled.data.message || "Failed to fetch account info");
+    }
   } catch (err) {
     showError(err.message);
   }
@@ -305,7 +312,7 @@ async function deleteMyAccount() {
 
     const handled = await handleResponse(res);
 
-    if (handled.ok) {
+    if (handled.ok || handled.status === 200) {
       alert("Account deleted successfully");
       logout();
     } else {
@@ -326,7 +333,16 @@ async function getMyExpenses() {
       headers: getAuthHeaders()
     });
     const handled = await handleResponse(res);
-    showResult(handled.data);
+
+    if (handled.ok) {
+      if (Array.isArray(handled.data) && handled.data.length === 0) {
+        showSuccess("No expenses found. Create your first expense!");
+      } else {
+        showResult(handled.data);
+      }
+    } else {
+      showError(handled.data.message || "Failed to fetch expenses");
+    }
   } catch (err) {
     showError(err.message);
   }
@@ -343,7 +359,12 @@ async function getExpenseById() {
       headers: getAuthHeaders()
     });
     const handled = await handleResponse(res);
-    showResult(handled.data);
+
+    if (handled.ok) {
+      showResult(handled.data);
+    } else {
+      showError(handled.data.message || "Expense not found");
+    }
   } catch (err) {
     showError(err.message);
   }
@@ -468,7 +489,7 @@ async function deleteExpense() {
 
     const handled = await handleResponse(res);
 
-    if (handled.ok) {
+    if (handled.ok || handled.status === 200) {
       showSuccess(`Expense with ID ${id} deleted successfully`);
       document.getElementById("deleteExpenseId").value = "";
     } else {
