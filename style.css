@@ -115,6 +115,75 @@ body::before {
   font-weight: 300;
 }
 
+/* ==================== User Info (Header) ==================== */
+.user-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+#user-name {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid var(--accent-danger);
+  color: var(--accent-danger);
+}
+
+.btn-logout:hover {
+  background: var(--accent-danger);
+  color: white;
+}
+
+/* ==================== Auth Section ==================== */
+.auth-section {
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.auth-tabs {
+  margin-bottom: 1.5rem;
+}
+
+.auth-panel {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.auth-panel.active {
+  display: block;
+}
+
+.card-auth {
+  max-width: 100%;
+}
+
+.auth-output {
+  margin-top: 1.5rem;
+}
+
+.auth-output pre {
+  padding: 1rem;
+  min-height: 60px;
+  max-height: 150px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  overflow: auto;
+}
+
 /* ==================== Tabs ==================== */
 .tabs {
   display: flex;
@@ -274,6 +343,10 @@ input[type="date"] {
   color-scheme: dark;
 }
 
+input[type="password"] {
+  letter-spacing: 0.1em;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -396,12 +469,19 @@ input[type="date"] {
   background: var(--border-color);
 }
 
-/* ==================== Hint ==================== */
+/* ==================== Hint & Warning ==================== */
 .hint {
   font-size: 0.8rem;
   color: var(--text-muted);
   font-style: italic;
   margin-top: 0.25rem;
+}
+
+.warning-text {
+  color: var(--accent-danger);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
 }
 
 /* ==================== Output Section ==================== */
@@ -433,7 +513,7 @@ input[type="date"] {
   font-weight: 600;
 }
 
-#output {
+#output, #auth-output {
   padding: 1.5rem;
   margin: 0;
   min-height: 150px;
@@ -446,27 +526,27 @@ input[type="date"] {
   background: var(--bg-input);
 }
 
-#output .placeholder {
+#output .placeholder, #auth-output .placeholder {
   color: var(--text-muted);
   font-style: italic;
 }
 
 /* Output Scrollbar */
-#output::-webkit-scrollbar {
+#output::-webkit-scrollbar, #auth-output::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-#output::-webkit-scrollbar-track {
+#output::-webkit-scrollbar-track, #auth-output::-webkit-scrollbar-track {
   background: var(--bg-secondary);
 }
 
-#output::-webkit-scrollbar-thumb {
+#output::-webkit-scrollbar-thumb, #auth-output::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 4px;
 }
 
-#output::-webkit-scrollbar-thumb:hover {
+#output::-webkit-scrollbar-thumb:hover, #auth-output::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
 
@@ -543,5 +623,10 @@ input[type="date"] {
 
   .card-large {
     grid-column: span 1;
+  }
+
+  .user-info {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }

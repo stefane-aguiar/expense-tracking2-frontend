@@ -1,35 +1,69 @@
 // ==================== Configuration ====================
 const baseUrl = "https://expense-tracking2.onrender.com";
 const output = document.getElementById("output");
+const authOutput = document.getElementById("auth-output");
 
-// ==================== Tab Navigation ====================
-document.querySelectorAll('.tab').forEach(tab => {
+// ==================== Auth State ====================
+let authToken = localStorage.getItem("authToken");
+let currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
+// Check if user is logged in on page load
+document.addEventListener("DOMContentLoaded", () => {
+  if (authToken && currentUser) {
+    showApp();
+  } else {
+    showAuth();
+  }
+});
+
+// ==================== Auth Tab Navigation ====================
+document.querySelectorAll('[data-auth-tab]').forEach(tab => {
   tab.addEventListener('click', () => {
-    // Remove active from all tabs
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    // Add active to clicked tab
+    document.querySelectorAll('[data-auth-tab]').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
 
-    // Hide all panels
+    document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+    const panelId = tab.dataset.authTab + '-panel';
+    document.getElementById(panelId).classList.add('active');
+  });
+});
+
+// ==================== App Tab Navigation ====================
+document.querySelectorAll('[data-tab]').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('[data-tab]').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    // Show selected panel
     const panelId = tab.dataset.tab + '-panel';
     document.getElementById(panelId).classList.add('active');
   });
 });
 
+// ==================== Show/Hide Sections ====================
+function showAuth() {
+  document.getElementById("auth-section").style.display = "block";
+  document.getElementById("app-section").style.display = "none";
+}
+
+function showApp() {
+  document.getElementById("auth-section").style.display = "none";
+  document.getElementById("app-section").style.display = "block";
+  if (currentUser) {
+    document.getElementById("user-name").textContent = `Welcome, ${currentUser.name}`;
+  }
+}
+
 // ==================== Output Helpers ====================
-function showResult(data) {
-  // Format and display the result with syntax highlighting
+function showResult(data, outputEl = output) {
   if (typeof data === "string") {
-    output.innerHTML = formatOutput(data);
+    outputEl.innerHTML = formatOutput(data);
   } else {
-    output.innerHTML = formatOutput(JSON.stringify(data, null, 2));
+    outputEl.innerHTML = formatOutput(JSON.stringify(data, null, 2));
   }
 }
 
 function formatOutput(text) {
-  // Simple syntax highlighting for JSON
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -45,20 +79,37 @@ function clearOutput() {
   output.innerHTML = '<span class="placeholder">Response will appear here...</span>';
 }
 
-function showError(message) {
-  output.innerHTML = `<span style="color: #f87171;">❌ Error: ${message}</span>`;
+function showError(message, outputEl = output) {
+  outputEl.innerHTML = `<span style="color: #f87171;">❌ Error: ${message}</span>`;
 }
 
-function showSuccess(message) {
-  output.innerHTML = `<span style="color: #34d399;">✅ ${message}</span>`;
+function showSuccess(message, outputEl = output) {
+  outputEl.innerHTML = `<span style="color: #34d399;">✅ ${message}</span>`;
+}
+
+function showLoading(outputEl = output) {
+  outputEl.innerHTML = '<span style="color: #94a3b8;">Loading...</span>';
 }
 
 // ==================== API Helpers ====================
+function getAuthHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${authToken}`
+  };
+}
+
 async function handleResponse(res) {
   const contentType = res.headers.get("content-type") || "";
 
   if (res.status === 204) {
     return { ok: res.ok, status: res.status, data: null };
+  }
+
+  if (res.status === 401 || res.status === 403) {
+    // Token expired or invalid
+    logout();
+    return { ok: false, status: res.status, data: { message: "Session expired. Please login again." } };
   }
 
   if (contentType.includes("application/json")) {
@@ -84,75 +135,122 @@ function requireId(id, fieldName = "ID") {
   }
 }
 
-// ==================== USER OPERATIONS ====================
+// ==================== AUTH OPERATIONS ====================
 
-// GET all users
-async function getAllUsers() {
+// Register
+async function register() {
   try {
-    output.innerHTML = '<span style="color: #94a3b8;">Loading...</span>';
-    const res = await fetch(`${baseUrl}/users`);
-    const handled = await handleResponse(res);
+    const name = document.getElementById("registerName").value.trim();
+    const email = document.getElementById("registerEmail").value.trim();
+    const password = document.getElementById("registerPassword").value;
 
-    showResult(handled.data);
-  } catch (err) {
-    showError(err.message);
-  }
-}
-
-// GET user by ID
-async function getUserById() {
-  try {
-    const id = document.getElementById("userId").value.trim();
-    requireId(id, "User ID");
-
-    output.innerHTML = '<span style="color: #94a3b8;">Loading...</span>';
-    const res = await fetch(`${baseUrl}/users/${encodeURIComponent(id)}`);
-    const handled = await handleResponse(res);
-    showResult(handled.data);
-  } catch (err) {
-    showError(err.message);
-  }
-}
-
-// CREATE user
-async function createUser() {
-  try {
-    const name = document.getElementById("userName").value.trim();
-    const email = document.getElementById("userEmail").value.trim();
-
-    if (!name || !email) {
-      showError("Name and Email are required");
+    if (!name || !email || !password) {
+      showError("Name, Email and Password are required", authOutput);
       return;
     }
 
-    output.innerHTML = '<span style="color: #94a3b8;">Creating user...</span>';
-    const res = await fetch(`${baseUrl}/users`, {
+    showLoading(authOutput);
+    const res = await fetch(`${baseUrl}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email }),
+      body: JSON.stringify({ name, email, password }),
     });
 
     const handled = await handleResponse(res);
 
     if (handled.ok) {
-      showResult({ message: "User created successfully!", user: handled.data });
+      showSuccess("Account created! Please login.", authOutput);
       // Clear inputs
-      document.getElementById("userName").value = "";
-      document.getElementById("userEmail").value = "";
+      document.getElementById("registerName").value = "";
+      document.getElementById("registerEmail").value = "";
+      document.getElementById("registerPassword").value = "";
+      // Switch to login tab
+      document.querySelector('[data-auth-tab="login"]').click();
     } else {
-      showResult(handled.data);
+      showResult(handled.data, authOutput);
     }
+  } catch (err) {
+    showError(err.message, authOutput);
+  }
+}
+
+// Login
+async function login() {
+  try {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if (!email || !password) {
+      showError("Email and Password are required", authOutput);
+      return;
+    }
+
+    showLoading(authOutput);
+    const res = await fetch(`${baseUrl}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const handled = await handleResponse(res);
+
+    if (handled.ok && handled.data.token) {
+      // Save token
+      authToken = handled.data.token;
+      localStorage.setItem("authToken", authToken);
+
+      // Decode token to get user info (JWT payload is base64)
+      const payload = JSON.parse(atob(authToken.split('.')[1]));
+      currentUser = {
+        id: payload.sub,
+        name: payload.name,
+        email: payload.email
+      };
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+      // Clear inputs
+      document.getElementById("loginEmail").value = "";
+      document.getElementById("loginPassword").value = "";
+
+      // Show app
+      showApp();
+    } else {
+      showError("Invalid email or password", authOutput);
+    }
+  } catch (err) {
+    showError(err.message, authOutput);
+  }
+}
+
+// Logout
+function logout() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("currentUser");
+  showAuth();
+  authOutput.innerHTML = '<span class="placeholder">Status will appear here...</span>';
+}
+
+// ==================== USER OPERATIONS ====================
+
+// GET my account
+async function getMyAccount() {
+  try {
+    showLoading();
+    const res = await fetch(`${baseUrl}/users/${currentUser.id}`, {
+      headers: getAuthHeaders()
+    });
+    const handled = await handleResponse(res);
+    showResult(handled.data);
   } catch (err) {
     showError(err.message);
   }
 }
 
-// UPDATE user
-async function updateUser() {
+// UPDATE my account
+async function updateMyAccount() {
   try {
-    const id = document.getElementById("updateUserId").value.trim();
-    requireId(id, "User ID");
-
     const name = document.getElementById("updateUserName").value.trim();
     const email = document.getElementById("updateUserEmail").value.trim();
 
@@ -165,19 +263,23 @@ async function updateUser() {
       return;
     }
 
-    output.innerHTML = '<span style="color: #94a3b8;">Updating user...</span>';
-    const res = await fetch(`${baseUrl}/users/${encodeURIComponent(id)}`, {
+    showLoading();
+    const res = await fetch(`${baseUrl}/users/${currentUser.id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(userData),
     });
 
     const handled = await handleResponse(res);
 
     if (handled.ok) {
-      showResult({ message: "User updated successfully!", user: handled.data });
-      // Clear inputs
-      document.getElementById("updateUserId").value = "";
+      // Update local user info
+      if (name) currentUser.name = name;
+      if (email) currentUser.email = email;
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+      document.getElementById("user-name").textContent = `Welcome, ${currentUser.name}`;
+
+      showResult({ message: "Account updated successfully!", user: handled.data });
       document.getElementById("updateUserName").value = "";
       document.getElementById("updateUserEmail").value = "";
     } else {
@@ -188,26 +290,24 @@ async function updateUser() {
   }
 }
 
-// DELETE user
-async function deleteUser() {
+// DELETE my account
+async function deleteMyAccount() {
   try {
-    const id = document.getElementById("deleteUserId").value.trim();
-    requireId(id, "User ID");
-
-    if (!confirm(`Are you sure you want to delete user with ID ${id}?`)) {
+    if (!confirm("Are you sure you want to delete your account? This cannot be undone!")) {
       return;
     }
 
-    output.innerHTML = '<span style="color: #94a3b8;">Deleting user...</span>';
-    const res = await fetch(`${baseUrl}/users/${encodeURIComponent(id)}`, {
+    showLoading();
+    const res = await fetch(`${baseUrl}/users/${currentUser.id}`, {
       method: "DELETE",
+      headers: getAuthHeaders()
     });
 
     const handled = await handleResponse(res);
 
     if (handled.ok) {
-      showSuccess(`User with ID ${id} deleted successfully`);
-      document.getElementById("deleteUserId").value = "";
+      alert("Account deleted successfully");
+      logout();
     } else {
       showResult(handled.data);
     }
@@ -218,13 +318,14 @@ async function deleteUser() {
 
 // ==================== EXPENSE OPERATIONS ====================
 
-// GET all expenses
-async function getAllExpenses() {
+// GET my expenses
+async function getMyExpenses() {
   try {
-    output.innerHTML = '<span style="color: #94a3b8;">Loading...</span>';
-    const res = await fetch(`${baseUrl}/expenses`);
+    showLoading();
+    const res = await fetch(`${baseUrl}/expenses`, {
+      headers: getAuthHeaders()
+    });
     const handled = await handleResponse(res);
-
     showResult(handled.data);
   } catch (err) {
     showError(err.message);
@@ -237,25 +338,11 @@ async function getExpenseById() {
     const id = document.getElementById("expenseId").value.trim();
     requireId(id, "Expense ID");
 
-    output.innerHTML = '<span style="color: #94a3b8;">Loading...</span>';
-    const res = await fetch(`${baseUrl}/expenses/${encodeURIComponent(id)}`);
+    showLoading();
+    const res = await fetch(`${baseUrl}/expenses/${encodeURIComponent(id)}`, {
+      headers: getAuthHeaders()
+    });
     const handled = await handleResponse(res);
-    showResult(handled.data);
-  } catch (err) {
-    showError(err.message);
-  }
-}
-
-// GET expenses by user ID
-async function getExpensesByUser() {
-  try {
-    const userId = document.getElementById("userExpensesId").value.trim();
-    requireId(userId, "User ID");
-
-    output.innerHTML = '<span style="color: #94a3b8;">Loading...</span>';
-    const res = await fetch(`${baseUrl}/expenses/user/${encodeURIComponent(userId)}`);
-    const handled = await handleResponse(res);
-
     showResult(handled.data);
   } catch (err) {
     showError(err.message);
@@ -270,10 +357,9 @@ async function createExpense() {
     const description = document.getElementById("description").value.trim();
     const amountRaw = document.getElementById("amount").value;
     const date = document.getElementById("date").value;
-    const userId = document.getElementById("expenseUserId").value.trim();
 
-    if (!category || !subCategory || !amountRaw || !date || !userId) {
-      showError("Category, Sub Category, Amount, Date, and User ID are required");
+    if (!category || !subCategory || !amountRaw || !date) {
+      showError("Category, Sub Category, Amount, and Date are required");
       return;
     }
 
@@ -288,14 +374,13 @@ async function createExpense() {
       subCategory,
       description: description || "",
       amount,
-      date,
-      userId: parseInt(userId),
+      date
     };
 
-    output.innerHTML = '<span style="color: #94a3b8;">Creating expense...</span>';
+    showLoading();
     const res = await fetch(`${baseUrl}/expenses`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(expenseData),
     });
 
@@ -303,13 +388,11 @@ async function createExpense() {
 
     if (handled.ok) {
       showResult({ message: "Expense created successfully!", expense: handled.data });
-      // Clear inputs
       document.getElementById("category").value = "";
       document.getElementById("subCategory").value = "";
       document.getElementById("description").value = "";
       document.getElementById("amount").value = "";
       document.getElementById("date").value = "";
-      document.getElementById("expenseUserId").value = "";
     } else {
       showResult(handled.data);
     }
@@ -342,10 +425,10 @@ async function updateExpense() {
       return;
     }
 
-    output.innerHTML = '<span style="color: #94a3b8;">Updating expense...</span>';
+    showLoading();
     const res = await fetch(`${baseUrl}/expenses/${encodeURIComponent(id)}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(expenseData),
     });
 
@@ -353,7 +436,6 @@ async function updateExpense() {
 
     if (handled.ok) {
       showResult({ message: "Expense updated successfully!", expense: handled.data });
-      // Clear inputs
       document.getElementById("updateExpenseId").value = "";
       document.getElementById("updateCategory").value = "";
       document.getElementById("updateSubCategory").value = "";
@@ -378,9 +460,10 @@ async function deleteExpense() {
       return;
     }
 
-    output.innerHTML = '<span style="color: #94a3b8;">Deleting expense...</span>';
+    showLoading();
     const res = await fetch(`${baseUrl}/expenses/${encodeURIComponent(id)}`, {
       method: "DELETE",
+      headers: getAuthHeaders()
     });
 
     const handled = await handleResponse(res);

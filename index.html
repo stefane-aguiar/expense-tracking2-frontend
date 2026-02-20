@@ -11,217 +11,255 @@
 </head>
 <body>
 <div class="container">
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">
-            <span class="logo-icon">💰</span>
-            <h1>Expense Tracker</h1>
-        </div>
-        <p class="subtitle">Manage your finances with ease</p>
-    </header>
 
-    <!-- Tab Navigation -->
-    <nav class="tabs">
-        <button class="tab active" data-tab="users">
-            <span class="tab-icon">👤</span>
-            Users
-        </button>
-        <button class="tab" data-tab="expenses">
-            <span class="tab-icon">💳</span>
-            Expenses
-        </button>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="main-content">
-
-        <!-- Users Panel -->
-        <section id="users-panel" class="panel active">
-            <div class="cards-grid">
-
-                <!-- Get Users Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-icon">🔍</span>
-                        <h3>Get Users</h3>
-                    </div>
-                    <div class="card-body">
-                        <button class="btn btn-primary btn-full" onclick="getAllUsers()">
-                            Get All Users
-                        </button>
-                        <div class="divider">
-                            <span>or</span>
-                        </div>
-                        <div class="input-group">
-                            <input type="number" id="userId" placeholder="Enter User ID" min="1" />
-                            <button class="btn btn-secondary" onclick="getUserById()">
-                                Search
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Create User Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-icon">➕</span>
-                        <h3>Create User</h3>
-                    </div>
-                    <div class="card-body">
-                        <input type="text" id="userName" placeholder="Name" />
-                        <input type="email" id="userEmail" placeholder="Email" />
-                        <button class="btn btn-success btn-full" onclick="createUser()">
-                            Create User
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Update User Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-icon">✏️</span>
-                        <h3>Update User</h3>
-                    </div>
-                    <div class="card-body">
-                        <input type="number" id="updateUserId" placeholder="User ID *" min="1" required />
-                        <input type="text" id="updateUserName" placeholder="New Name (optional)" />
-                        <input type="email" id="updateUserEmail" placeholder="New Email (optional)" />
-                        <button class="btn btn-warning btn-full" onclick="updateUser()">
-                            Update User
-                        </button>
-                        <p class="hint">* Leave fields empty to keep current values</p>
-                    </div>
-                </div>
-
-                <!-- Delete User Card -->
-                <div class="card card-danger">
-                    <div class="card-header">
-                        <span class="card-icon">🗑️</span>
-                        <h3>Delete User</h3>
-                    </div>
-                    <div class="card-body">
-                        <input type="number" id="deleteUserId" placeholder="User ID" min="1" />
-                        <button class="btn btn-danger btn-full" onclick="deleteUser()">
-                            Delete User
-                        </button>
-                    </div>
-                </div>
-
+    <!-- Login/Register Section (shown when not logged in) -->
+    <section id="auth-section" class="auth-section">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">💰</span>
+                <h1>Expense Tracker</h1>
             </div>
-        </section>
+            <p class="subtitle">Manage your finances with ease</p>
+        </header>
 
-        <!-- Expenses Panel -->
-        <section id="expenses-panel" class="panel">
-            <div class="cards-grid">
+        <!-- Auth Tabs -->
+        <nav class="tabs auth-tabs">
+            <button class="tab active" data-auth-tab="login">
+                <span class="tab-icon">🔐</span>
+                Login
+            </button>
+            <button class="tab" data-auth-tab="register">
+                <span class="tab-icon">📝</span>
+                Register
+            </button>
+        </nav>
 
-                <!-- Get Expenses Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-icon">🔍</span>
-                        <h3>Get Expenses</h3>
-                    </div>
-                    <div class="card-body">
-                        <button class="btn btn-primary btn-full" onclick="getAllExpenses()">
-                            Get All Expenses
-                        </button>
-                        <div class="divider">
-                            <span>or search by</span>
-                        </div>
-                        <div class="input-group">
-                            <input type="number" id="expenseId" placeholder="Expense ID" min="1" />
-                            <button class="btn btn-secondary" onclick="getExpenseById()">
-                                By ID
-                            </button>
-                        </div>
-                        <div class="input-group">
-                            <input type="number" id="userExpensesId" placeholder="User ID" min="1" />
-                            <button class="btn btn-secondary" onclick="getExpensesByUser()">
-                                By User
-                            </button>
-                        </div>
-                    </div>
+        <!-- Login Panel -->
+        <div id="login-panel" class="auth-panel active">
+            <div class="card card-auth">
+                <div class="card-header">
+                    <span class="card-icon">🔐</span>
+                    <h3>Login</h3>
                 </div>
-
-                <!-- Create Expense Card -->
-                <div class="card card-large">
-                    <div class="card-header">
-                        <span class="card-icon">➕</span>
-                        <h3>Create Expense</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-row">
-                            <input type="text" id="category" placeholder="Category *" />
-                            <input type="text" id="subCategory" placeholder="Sub Category *" />
-                        </div>
-                        <input type="text" id="description" placeholder="Description (optional)" />
-                        <div class="form-row">
-                            <input type="number" id="amount" placeholder="Amount *" step="0.01" min="0" />
-                            <input type="date" id="date" />
-                        </div>
-                        <input type="number" id="expenseUserId" placeholder="User ID *" min="1" />
-                        <button class="btn btn-success btn-full" onclick="createExpense()">
-                            Create Expense
-                        </button>
-                    </div>
+                <div class="card-body">
+                    <input type="email" id="loginEmail" placeholder="Email" />
+                    <input type="password" id="loginPassword" placeholder="Password" />
+                    <button class="btn btn-primary btn-full" onclick="login()">
+                        Login
+                    </button>
                 </div>
-
-                <!-- Update Expense Card -->
-                <div class="card card-large">
-                    <div class="card-header">
-                        <span class="card-icon">✏️</span>
-                        <h3>Update Expense</h3>
-                    </div>
-                    <div class="card-body">
-                        <input type="number" id="updateExpenseId" placeholder="Expense ID *" min="1" required />
-                        <div class="form-row">
-                            <input type="text" id="updateCategory" placeholder="Category (optional)" />
-                            <input type="text" id="updateSubCategory" placeholder="Sub Category (optional)" />
-                        </div>
-                        <input type="text" id="updateDescription" placeholder="Description (optional)" />
-                        <div class="form-row">
-                            <input type="number" id="updateAmount" placeholder="Amount (optional)" step="0.01" min="0" />
-                            <input type="date" id="updateDate" />
-                        </div>
-                        <button class="btn btn-warning btn-full" onclick="updateExpense()">
-                            Update Expense
-                        </button>
-                        <p class="hint">* Leave fields empty to keep current values</p>
-                    </div>
-                </div>
-
-                <!-- Delete Expense Card -->
-                <div class="card card-danger">
-                    <div class="card-header">
-                        <span class="card-icon">🗑️</span>
-                        <h3>Delete Expense</h3>
-                    </div>
-                    <div class="card-body">
-                        <input type="number" id="deleteExpenseId" placeholder="Expense ID" min="1" />
-                        <button class="btn btn-danger btn-full" onclick="deleteExpense()">
-                            Delete Expense
-                        </button>
-                    </div>
-                </div>
-
             </div>
-        </section>
-
-    </main>
-
-    <!-- Output Section -->
-    <section class="output-section">
-        <div class="output-header">
-            <span class="output-icon">📋</span>
-            <h3>Response</h3>
-            <button class="btn btn-small" onclick="clearOutput()">Clear</button>
         </div>
-        <pre id="output"><span class="placeholder">Response will appear here...</span></pre>
+
+        <!-- Register Panel -->
+        <div id="register-panel" class="auth-panel">
+            <div class="card card-auth">
+                <div class="card-header">
+                    <span class="card-icon">📝</span>
+                    <h3>Create Account</h3>
+                </div>
+                <div class="card-body">
+                    <input type="text" id="registerName" placeholder="Name" />
+                    <input type="email" id="registerEmail" placeholder="Email" />
+                    <input type="password" id="registerPassword" placeholder="Password" />
+                    <button class="btn btn-success btn-full" onclick="register()">
+                        Create Account
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Output -->
+        <div class="output-section auth-output">
+            <pre id="auth-output"><span class="placeholder">Status will appear here...</span></pre>
+        </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>Built with Kotlin + Spring Boot</p>
-    </footer>
+    <!-- Main App Section (shown when logged in) -->
+    <section id="app-section" class="app-section" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">💰</span>
+                <h1>Expense Tracker</h1>
+            </div>
+            <div class="user-info">
+                <span id="user-name"></span>
+                <button class="btn btn-small btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tabs">
+            <button class="tab" data-tab="users">
+                <span class="tab-icon">👤</span>
+                My Account
+            </button>
+            <button class="tab active" data-tab="expenses">
+                <span class="tab-icon">💳</span>
+                My Expenses
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Users Panel (My Account) -->
+            <section id="users-panel" class="panel">
+                <div class="cards-grid">
+
+                    <!-- View My Account Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">👤</span>
+                            <h3>My Account</h3>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-primary btn-full" onclick="getMyAccount()">
+                                View My Info
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Update My Account Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">✏️</span>
+                            <h3>Update Account</h3>
+                        </div>
+                        <div class="card-body">
+                            <input type="text" id="updateUserName" placeholder="New Name (optional)" />
+                            <input type="email" id="updateUserEmail" placeholder="New Email (optional)" />
+                            <button class="btn btn-warning btn-full" onclick="updateMyAccount()">
+                                Update Account
+                            </button>
+                            <p class="hint">* Leave fields empty to keep current values</p>
+                        </div>
+                    </div>
+
+                    <!-- Delete My Account Card -->
+                    <div class="card card-danger">
+                        <div class="card-header">
+                            <span class="card-icon">🗑️</span>
+                            <h3>Delete Account</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="warning-text">This action cannot be undone!</p>
+                            <button class="btn btn-danger btn-full" onclick="deleteMyAccount()">
+                                Delete My Account
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Expenses Panel -->
+            <section id="expenses-panel" class="panel active">
+                <div class="cards-grid">
+
+                    <!-- Get My Expenses Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">🔍</span>
+                            <h3>My Expenses</h3>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-primary btn-full" onclick="getMyExpenses()">
+                                Get All My Expenses
+                            </button>
+                            <div class="divider">
+                                <span>or search by</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="number" id="expenseId" placeholder="Expense ID" min="1" />
+                                <button class="btn btn-secondary" onclick="getExpenseById()">
+                                    By ID
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Create Expense Card -->
+                    <div class="card card-large">
+                        <div class="card-header">
+                            <span class="card-icon">➕</span>
+                            <h3>Create Expense</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <input type="text" id="category" placeholder="Category *" />
+                                <input type="text" id="subCategory" placeholder="Sub Category *" />
+                            </div>
+                            <input type="text" id="description" placeholder="Description (optional)" />
+                            <div class="form-row">
+                                <input type="number" id="amount" placeholder="Amount *" step="0.01" min="0" />
+                                <input type="date" id="date" />
+                            </div>
+                            <button class="btn btn-success btn-full" onclick="createExpense()">
+                                Create Expense
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Update Expense Card -->
+                    <div class="card card-large">
+                        <div class="card-header">
+                            <span class="card-icon">✏️</span>
+                            <h3>Update Expense</h3>
+                        </div>
+                        <div class="card-body">
+                            <input type="number" id="updateExpenseId" placeholder="Expense ID *" min="1" required />
+                            <div class="form-row">
+                                <input type="text" id="updateCategory" placeholder="Category (optional)" />
+                                <input type="text" id="updateSubCategory" placeholder="Sub Category (optional)" />
+                            </div>
+                            <input type="text" id="updateDescription" placeholder="Description (optional)" />
+                            <div class="form-row">
+                                <input type="number" id="updateAmount" placeholder="Amount (optional)" step="0.01" min="0" />
+                                <input type="date" id="updateDate" />
+                            </div>
+                            <button class="btn btn-warning btn-full" onclick="updateExpense()">
+                                Update Expense
+                            </button>
+                            <p class="hint">* Leave fields empty to keep current values</p>
+                        </div>
+                    </div>
+
+                    <!-- Delete Expense Card -->
+                    <div class="card card-danger">
+                        <div class="card-header">
+                            <span class="card-icon">🗑️</span>
+                            <h3>Delete Expense</h3>
+                        </div>
+                        <div class="card-body">
+                            <input type="number" id="deleteExpenseId" placeholder="Expense ID" min="1" />
+                            <button class="btn btn-danger btn-full" onclick="deleteExpense()">
+                                Delete Expense
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Output Section -->
+        <section class="output-section">
+            <div class="output-header">
+                <span class="output-icon">📋</span>
+                <h3>Response</h3>
+                <button class="btn btn-small" onclick="clearOutput()">Clear</button>
+            </div>
+            <pre id="output"><span class="placeholder">Response will appear here...</span></pre>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with Kotlin + Spring Boot</p>
+        </footer>
+    </section>
 </div>
 
 <script src="script.js"></script>
