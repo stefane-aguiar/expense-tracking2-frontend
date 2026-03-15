@@ -376,11 +376,12 @@ async function createExpense() {
     const category = document.getElementById("category").value.trim();
     const subCategory = document.getElementById("subCategory").value.trim();
     const description = document.getElementById("description").value.trim();
+    const paymentMethod = document.getElementById("paymentMethod").value.trim();
     const amountRaw = document.getElementById("amount").value;
     const date = document.getElementById("date").value;
 
-    if (!category || !subCategory || !amountRaw || !date) {
-      showError("Category, Sub Category, Amount, and Date are required");
+    if (!category || !subCategory || !paymentMethod || !amountRaw || !date) {
+      showError("Category, Sub Category, Payment Method, Amount, and Date are required");
       return;
     }
 
@@ -393,7 +394,8 @@ async function createExpense() {
     const expenseData = {
       category,
       subCategory,
-      description: description || "",
+      description: description || null,
+      paymentMethod,
       amount,
       date
     };
@@ -412,6 +414,7 @@ async function createExpense() {
       document.getElementById("category").value = "";
       document.getElementById("subCategory").value = "";
       document.getElementById("description").value = "";
+      document.getElementById("paymentMethod").value = "";
       document.getElementById("amount").value = "";
       document.getElementById("date").value = "";
     } else {
@@ -431,6 +434,7 @@ async function updateExpense() {
     const category = document.getElementById("updateCategory").value.trim();
     const subCategory = document.getElementById("updateSubCategory").value.trim();
     const description = document.getElementById("updateDescription").value.trim();
+    const paymentMethod = document.getElementById("updatePaymentMethod").value.trim();
     const amount = document.getElementById("updateAmount").value;
     const date = document.getElementById("updateDate").value;
 
@@ -438,6 +442,7 @@ async function updateExpense() {
     if (category) expenseData.category = category;
     if (subCategory) expenseData.subCategory = subCategory;
     if (description) expenseData.description = description;
+    if (paymentMethod) expenseData.paymentMethod = paymentMethod;
     if (amount) expenseData.amount = parseFloat(amount);
     if (date) expenseData.date = date;
 
@@ -461,6 +466,7 @@ async function updateExpense() {
       document.getElementById("updateCategory").value = "";
       document.getElementById("updateSubCategory").value = "";
       document.getElementById("updateDescription").value = "";
+      document.getElementById("updatePaymentMethod").value = "";
       document.getElementById("updateAmount").value = "";
       document.getElementById("updateDate").value = "";
     } else {
